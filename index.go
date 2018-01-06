@@ -7,6 +7,11 @@ import (
 func main() {
 	app := iris.New()
 
+	//api endpoints
+	app.Get("/movies", func(ctx iris.Context) {
+
+	})
+
 	app.Get("/", func(ctx iris.Context) {
 		HomeController()
 	})
