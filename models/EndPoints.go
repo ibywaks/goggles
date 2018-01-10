@@ -9,7 +9,6 @@ type EndPoints struct {
 	gorm.Model
 	Name, URL string
 	Type      string `gorm:"DEFAULT:'GET'"`
-	Payload   string `gorm:"type:text"`
 	Calls 	  int64
 }
 
