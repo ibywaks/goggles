@@ -14,9 +14,9 @@ func main() {
 
 	db, _ := gorm.Open("sqlite3", "./db/gorm.db")
 
-	db.AutoMigrate(&models.Movies{}, &models.EndPoints{})
+	db.AutoMigrate(&models.Movies{}, &models.EndPoints{}, &models.EndPointsCall{})
 
-	defer db.Close()
+	// defer db.Close()
 
 	//api endpoints
 	app.Get("/api/movies", func(ctx iris.Context) {
@@ -49,7 +49,7 @@ func main() {
 		mv.Delete(ID)
 	})
 
-	app.Get("/dashboard", func(ctx iris.Context) {
+	app.Get("/admin/dashboard", func(ctx iris.Context) {
 		(new(controllers.HomeController)).ShowDashboard()
 	})
 

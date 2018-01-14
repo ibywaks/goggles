@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"goggles/models"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
@@ -25,7 +26,7 @@ func (m MoviesController) Get() {
 	movie := models.Movies{}
 	movies := movie.Get()
 
-	m.saveEndpointCall("Movies List")
+	go m.saveEndpointCall("Movies List")
 
 	m.Cntx.JSON(iris.Map{"status": "success", "data": movies})
 }
@@ -35,9 +36,15 @@ func (m MoviesController) GetByID(ID int64) {
 	movie := models.Movies{}
 	movie = movie.GetByID(ID)
 
-	m.saveEndpointCall("Single Movie Retrieval")
-	
-	m.Cntx.JSON(iris.Map{"status": "success", "data": movie})
+	if !movie.Validate() {
+		msg := fmt.Sprintf("Movie with ID: %v not found", ID)
+		m.Cntx.StatusCode(iris.StatusNotFound)		
+		m.Cntx.JSON(iris.Map{"status": "error", "message": msg})
+	} else {
+		m.Cntx.JSON(iris.Map{"status": "success", "data": movie})
+	}
+
+	go m.saveEndpointCall("Single Movie Retrieval")	
 }
 
 //Add - Add new movie
@@ -45,10 +52,15 @@ func (m MoviesController) Add() {
 	movie := models.Movies{}
 	m.Cntx.ReadForm(&movie)
 
-	m.saveEndpointCall("Add Movie")
+	if !movie.Validate() {
+		m.Cntx.StatusCode(iris.StatusBadRequest)		
+		m.Cntx.JSON(iris.Map{"status": "error", "message": "Movie not added"})
+	} else {
+		movie.Create()
+		m.Cntx.JSON(iris.Map{"status": "success", "data": movie})
+	}
 
-	movie.Create()
-	m.Cntx.JSON(iris.Map{"status":"success", "data": movie})
+	go m.saveEndpointCall("Add Movie")
 }
 
 //Edit - Edit a movie
@@ -57,10 +69,17 @@ func (m MoviesController) Edit(ID int64) {
 	movie = movie.GetByID(ID)
 	m.Cntx.ReadForm(&movie)
 
-	m.saveEndpointCall("Single Movie Edit")
+	if !movie.Validate() {
+		msg := fmt.Sprintf("Movie with ID: %v not found", ID)
+		m.Cntx.StatusCode(iris.StatusNotFound)		
+		m.Cntx.JSON(iris.Map{"status": "error", "message": msg})
+	} else {
+		movie.Edit()
+		m.Cntx.JSON(iris.Map{"status": "success", "data": movie})
+	}
 
-	movie.Edit()
-	m.Cntx.JSON(iris.Map{"status":"success", "data": movie})	
+	go m.saveEndpointCall("Single Movie Edit")
+
 }
 
 //Delete - delete a specific movie
@@ -68,10 +87,16 @@ func (m MoviesController) Delete(ID int64) {
 	movie := models.Movies{}
 	movie = movie.GetByID(ID)
 
-	m.saveEndpointCall("Single Movie Delete")
+	if !movie.Validate() {
+		msg := fmt.Sprintf("Movie with ID: %v not found", ID)
+		m.Cntx.StatusCode(iris.StatusNotFound)		
+		m.Cntx.JSON(iris.Map{"status": "error", "message": msg})
+	} else {
+		movie.Delete()
+		m.Cntx.JSON(iris.Map{"status":"success", "message": "Movie with ID: "})
+	}
 
-	movie.Delete()
-	m.Cntx.JSON(iris.Map{"status":"success", "message": "Movie with ID: "})
+	go m.saveEndpointCall("Single Movie Delete")
 }
 
 func (m MoviesController) saveEndpointCall(name string) {
@@ -82,5 +107,7 @@ func (m MoviesController) saveEndpointCall(name string) {
 		Type: m.Cntx.Request().Method,
 	}
 
-	endpoint.SaveCount()
+	endpoint = endpoint.SaveOrCreate()
+
+	endpoint.SaveCall( m.Cntx )
 }

@@ -9,7 +9,7 @@ type EndPoints struct {
 	gorm.Model
 	Name, URL string
 	Type      string `gorm:"DEFAULT:'GET'"`
-	Calls 	  int64
+	Calls []EndPointsCall
 }
 
 var db, _ = gorm.Open("sqlite3", "./db/gorm.db")
@@ -21,9 +21,8 @@ func (ep EndPoints) Get() EndPoints {
 	return ep
 }
 
-//SaveCount - save endpoint call counts
-func (ep EndPoints) SaveCount() {
-	db.FirstOrCreate(&ep)
-	ep.Calls = (ep.Calls + 1)
-	db.Save(&ep)
+//SaveOrCreate - save endpoint called
+func (ep EndPoints) SaveOrCreate() EndPoints {
+	db.FirstOrCreate(&ep, ep)
+	return ep
 }

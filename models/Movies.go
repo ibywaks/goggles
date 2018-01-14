@@ -8,7 +8,8 @@ import (
 //Movies - movies model object
 type Movies struct {
 	gorm.Model
-	Name, Genre, Description string
+	Name					 string `sql:"not null;"`
+	Genre, Description       string
 	Year                     int64
 }
 
@@ -46,4 +47,15 @@ func (m Movies) Edit() Movies {
 	db.Save(&m)
 
 	return m
+}
+
+
+//Validate - validate movies
+func (m Movies) Validate() bool {
+	
+	if m == (Movies{}) || m.Name == "" {
+		return false
+	}
+
+	return true
 }
