@@ -8,17 +8,43 @@ import (
 type EndPoints struct {
 	gorm.Model
 	Name, URL string
-	Type      string `gorm:"DEFAULT:'GET'"`
-	Calls []EndPointsCall
+	Type      string          `gorm:"DEFAULT:'GET'"`
+	Calls     []EndPointCalls `gorm:"ForeignKey:EndPointID"`
+}
+
+//EndPointsWithLastCall - Endpoints with last call
+type EndPointsWithLastCall struct {
+	Name, URL   string
+	Type        string
+	LastStatus  int
+	NumRequests int
 }
 
 var db, _ = gorm.Open("sqlite3", "./db/gorm.db")
 
-//Get - get all endpoints
-func (ep EndPoints) Get() EndPoints {
-	db.Order("calls DESC").Find(&ep)
+//GetWithLastCall - get all endpoints with last call details
+func (ep EndPoints) GetWithLastCall() []EndPointsWithLastCall {
+	var eps []EndPoints
+	var epsWithDets []EndPointsWithLastCall
 
-	return ep
+	db.Preload("Calls").Find(&eps)
+
+	for _, elem := range eps {
+		calls := elem.Calls
+		lastCall := calls[len(calls)-1:][0]
+
+		newElem := EndPointsWithLastCall{
+			elem.Name,
+			elem.URL,
+			elem.Type,
+			lastCall.ResponseCode,
+			len(calls),
+		}
+
+		epsWithDets = append(epsWithDets, newElem)
+	}
+
+	return epsWithDets
 }
 
 //SaveOrCreate - save endpoint called

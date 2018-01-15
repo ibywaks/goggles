@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strconv"
 	"goggles/controllers"
 	"goggles/models"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	"github.com/kataras/iris"
@@ -12,11 +12,14 @@ import (
 func main() {
 	app := iris.New()
 
+	tmpl := iris.Handlebars("./templates", ".html")
+	tmpl.Reload(true) //dev mode
+
+	app.RegisterView(tmpl)
+
 	db, _ := gorm.Open("sqlite3", "./db/gorm.db")
 
-	db.AutoMigrate(&models.Movies{}, &models.EndPoints{}, &models.EndPointsCall{})
-
-	// defer db.Close()
+	db.AutoMigrate(&models.Movies{}, &models.EndPoints{}, &models.EndPointCalls{})
 
 	//api endpoints
 	app.Get("/api/movies", func(ctx iris.Context) {
@@ -30,27 +33,28 @@ func main() {
 	})
 
 	app.Get("/api/movies/{id}", func(ctx iris.Context) {
-		ID,_ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
+		ID, _ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
 		mv := controllers.MoviesController{Cntx: ctx}
 		mv.GetByID(ID)
 	})
 
-	app.Post("/api/movies/{id}", func(ctx iris.Context) {
-		ID,_ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
-		
+	app.Put("/api/movies/{id}", func(ctx iris.Context) {
+		ID, _ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
+
 		mv := controllers.MoviesController{Cntx: ctx}
 		mv.Edit(ID)
 	})
 
 	app.Delete("/api/movies/{id}", func(ctx iris.Context) {
-		ID,_ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
-		
+		ID, _ := strconv.ParseInt(ctx.Params().Get("id"), 10, 64)
+
 		mv := controllers.MoviesController{Cntx: ctx}
 		mv.Delete(ID)
 	})
 
-	app.Get("/admin/dashboard", func(ctx iris.Context) {
-		(new(controllers.HomeController)).ShowDashboard()
+	app.Get("/admin/endpoints", func(ctx iris.Context) {
+		dashBoard := controllers.DashBoardControllers{Cntx: ctx}
+		dashBoard.ShowEndpoints()
 	})
 
 	app.Get("/", func(ctx iris.Context) {
