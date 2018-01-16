@@ -8,13 +8,13 @@ import (
 )
 
 //DashBoardControllers - Controller object for Endpoints dashboard
-type DashBoardControllers struct {
+type DashBoardController struct {
 	mvc.BaseController
 	Cntx iris.Context
 }
 
 //ShowEndpoints - show list of endpoints
-func (d DashBoardControllers) ShowEndpoints() {
+func (d DashBoardController) ShowEndpoints() {
 	endpoints := (models.EndPoints{}).GetWithLastCall()
 
 	d.Cntx.ViewData("endpoints", endpoints)

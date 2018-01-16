@@ -53,7 +53,7 @@ func main() {
 	})
 
 	app.Get("/admin/endpoints", func(ctx iris.Context) {
-		dashBoard := controllers.DashBoardControllers{Cntx: ctx}
+		dashBoard := controllers.DashBoardController{Cntx: ctx}
 		dashBoard.ShowEndpoints()
 	})
 
