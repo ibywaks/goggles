@@ -9,17 +9,17 @@ import (
 	"github.com/pusher/pusher-http-go"
 )
 
-// MoviesController - serve movie data
+// MoviesController - controller object to serve movie data
 type MoviesController struct {
 	mvc.BaseController
 	Cntx iris.Context
 }
 
 var client = pusher.Client{
-	AppId:   "your_app_id",
-	Key:     "your_app_key",
-	Secret:  "your_app_secret",
-	Cluster: "your_app_cluster",
+	AppId:   "app_id",
+	Key:     "app_key",
+	Secret:  "app_secret",
+	Cluster: "app_cluster",
 }
 
 //Get - get a list of all available movies
@@ -112,6 +112,17 @@ func (m MoviesController) saveEndpointCall(name string) {
 	}
 
 	endpoint = endpoint.SaveOrCreate()
+	endpointCall := endpoint.SaveCall(m.Cntx)
 
-	endpoint.SaveCall(m.Cntx)
+	endpointWithCallSummary := models.EndPointWithCallSummary{
+		ID:            endpoint.ID,
+		Name:          endpoint.Name,
+		URL:           endpoint.URL,
+		Type:          endpoint.Type,
+		LastStatus:    endpointCall.ResponseCode,
+		NumRequests:   1,
+		LastRequester: endpointCall.RequestIP,
+	}
+
+	client.Trigger("goggles_channel", "new_endpoint_request", endpointWithCallSummary)
 }

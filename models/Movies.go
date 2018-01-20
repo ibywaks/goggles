@@ -2,16 +2,19 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	//sqlite3 import
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 //Movies - movies model object
 type Movies struct {
 	gorm.Model
-	Name					 string `sql:"not null;"`
-	Genre, Description       string
-	Year                     int64
+	Name               string `sql:"not null;"`
+	Genre, Description string
+	Year               int64
 }
+
+var db, _ = gorm.Open("sqlite3", "./db/gorm.db")
 
 //Get - get all movies
 func (m Movies) Get() []Movies {
@@ -49,10 +52,9 @@ func (m Movies) Edit() Movies {
 	return m
 }
 
-
 //Validate - validate movies
 func (m Movies) Validate() bool {
-	
+
 	if m == (Movies{}) || m.Name == "" {
 		return false
 	}

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"goggles/controllers"
 	"goggles/models"
 	"strconv"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/kataras/iris"
 )
 
@@ -15,10 +17,28 @@ func main() {
 	tmpl := iris.Handlebars("./templates", ".html")
 	tmpl.Reload(true) //dev mode
 
+	tmpl.AddFunc("status_class", func(status int) string {
+		if status >= 200 && status < 300 {
+			return "success"
+		} else if status >= 300 && status < 400 {
+			return "warning"
+		} else if status >= 400 {
+			return "danger"
+		}
+
+		return "success"
+	})
+
 	app.RegisterView(tmpl)
 
-	db, _ := gorm.Open("sqlite3", "./db/gorm.db")
+	//initialise ORM
+	db, err := gorm.Open("sqlite3", "./db/gorm.db")
 
+	if err != nil {
+		fmt.Println("Error", err)
+	}
+
+	//AutoMigrate models
 	db.AutoMigrate(&models.Movies{}, &models.EndPoints{}, &models.EndPointCalls{})
 
 	//api endpoints

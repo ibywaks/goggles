@@ -7,7 +7,7 @@ import (
 	"github.com/kataras/iris/mvc"
 )
 
-//DashBoardControllers - Controller object for Endpoints dashboard
+//DashBoardController - Controller object for Endpoints dashboard
 type DashBoardController struct {
 	mvc.BaseController
 	Cntx iris.Context
@@ -15,7 +15,7 @@ type DashBoardController struct {
 
 //ShowEndpoints - show list of endpoints
 func (d DashBoardController) ShowEndpoints() {
-	endpoints := (models.EndPoints{}).GetWithLastCall()
+	endpoints := (models.EndPoints{}).GetWithCallSummary()
 
 	d.Cntx.ViewData("endpoints", endpoints)
 	d.Cntx.View("endpoints.html")

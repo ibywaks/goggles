@@ -12,20 +12,20 @@ type EndPoints struct {
 	Calls     []EndPointCalls `gorm:"ForeignKey:EndPointID"`
 }
 
-//EndPointsWithLastCall - Endpoints with last call
-type EndPointsWithLastCall struct {
-	Name, URL   string
-	Type        string
-	LastStatus  int
-	NumRequests int
+//EndPointWithCallSummary - Endpoint with last call summary
+type EndPointWithCallSummary struct {
+	ID            uint
+	Name, URL     string
+	Type          string
+	LastStatus    int
+	NumRequests   int
+	LastRequester string
 }
 
-var db, _ = gorm.Open("sqlite3", "./db/gorm.db")
-
-//GetWithLastCall - get all endpoints with last call details
-func (ep EndPoints) GetWithLastCall() []EndPointsWithLastCall {
+//GetWithCallSummary - get all endpoints with call summary details
+func (ep EndPoints) GetWithCallSummary() []EndPointWithCallSummary {
 	var eps []EndPoints
-	var epsWithDets []EndPointsWithLastCall
+	var epsWithDets []EndPointWithCallSummary
 
 	db.Preload("Calls").Find(&eps)
 
@@ -33,12 +33,14 @@ func (ep EndPoints) GetWithLastCall() []EndPointsWithLastCall {
 		calls := elem.Calls
 		lastCall := calls[len(calls)-1:][0]
 
-		newElem := EndPointsWithLastCall{
+		newElem := EndPointWithCallSummary{
+			elem.ID,
 			elem.Name,
 			elem.URL,
 			elem.Type,
 			lastCall.ResponseCode,
 			len(calls),
+			lastCall.RequestIP,
 		}
 
 		epsWithDets = append(epsWithDets, newElem)
